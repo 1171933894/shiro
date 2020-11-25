@@ -68,5 +68,9 @@ public interface ValidatingSessionManager extends SessionManager {
      * needing session validation will create and use one by default if one is not provided by the
      * application configuration.
      */
+    /**
+     * 为那些有效的Session进行校验，如果Session发现是无效的，将会被更改。
+     * 这个方法期望有规律的运行，如1小时一次，一天一次或一星期一次。运行的频率取决于应用的性能，用户活跃数等。
+     */
     void validateSessions();
 }

@@ -44,6 +44,10 @@ public class DelegatingSession implements Session, Serializable {
 
     //TODO - complete JavaDoc
 
+    // SessionKey就是Session唯一ID的对象形式
+    /**
+     * DelegatingSession的委托方式是用过SessionKey从SessionManager中获取相应的Session来进行处理的。在SessionManager中管理着很多Session
+     */
     private final SessionKey key;
 
     //cached fields to avoid a server-side method call if out-of-process:
@@ -53,6 +57,7 @@ public class DelegatingSession implements Session, Serializable {
     /**
      * Handle to the target NativeSessionManager that will support the delegate calls.
      */
+    // 委派给NativeSessionManager对象，这是SessionManager接口的一个子接口
     private final transient NativeSessionManager sessionManager;
 
 

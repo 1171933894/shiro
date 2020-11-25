@@ -117,6 +117,32 @@ import java.util.Map;
  * @see org.springframework.web.filter.DelegatingFilterProxy DelegatingFilterProxy
  * @since 1.0
  */
+
+/**
+ * <bean id="shiroFilter" class="org.apache.shiro.spring.web.ShiroFilterFactoryBean">
+ *     <!-- 安全管理器-->
+ *     <property name="securityManager" ref="securityManager"/>
+ *     <!-- 登录地址-->
+ *     <property name="loginUrl" value="/login.jsp"/>
+ *     <!-- 未授权跳转地址-->
+ *     <property name="unauthorizedUrl" value="/unauthorized.jsp"/>
+ *     <!--配置自定义的过滤器-->
+ *     <property name="filters">
+ *         <util:map>
+ *             <entry key="authc" value-ref="formAuthenticationFilter"/>
+ *         </util:map>
+ *     </property>
+ *     <!--配置请求路径过滤规则-->
+ *     <property name="filterChainDefinitions">
+ *         <value>
+ *             /index.jsp = anon
+ *             /login.jsp = authc
+ *             /logout = logout
+ *             /** = user
+ *         </value>
+ *     </property>
+ * </bean>
+ */
 public class ShiroFilterFactoryBean implements FactoryBean, BeanPostProcessor {
 
     private static transient final Logger log = LoggerFactory.getLogger(ShiroFilterFactoryBean.class);
@@ -445,22 +471,26 @@ public class ShiroFilterFactoryBean implements FactoryBean, BeanPostProcessor {
 
         log.debug("Creating Shiro Filter instance.");
 
+        //  安全管理器不能为空
         SecurityManager securityManager = getSecurityManager();
         if (securityManager == null) {
             String msg = "SecurityManager property must be set.";
             throw new BeanInitializationException(msg);
         }
 
+        // WEB环境中，必须是WebSecurityManager类型
         if (!(securityManager instanceof WebSecurityManager)) {
             String msg = "The security manager does not implement the WebSecurityManager interface.";
             throw new BeanInitializationException(msg);
         }
 
+        //管理着Shiro提供的默认过滤器信息
         FilterChainManager manager = createFilterChainManager();
 
         //Expose the constructed FilterChainManager by first wrapping it in a
         // FilterChainResolver implementation. The AbstractShiroFilter implementations
         // do not know about FilterChainManagers - only resolvers:
+        //获取路径匹配过滤器链的处理对象
         PathMatchingFilterChainResolver chainResolver = new PathMatchingFilterChainResolver();
         chainResolver.setFilterChainManager(manager);
 
@@ -468,6 +498,7 @@ public class ShiroFilterFactoryBean implements FactoryBean, BeanPostProcessor {
         //FilterChainResolver.  It doesn't matter that the instance is an anonymous inner class
         //here - we're just using it because it is a concrete AbstractShiroFilter instance that accepts
         //injection of the SecurityManager and FilterChainResolver:
+        // 创建SpringShiroFilter对象
         return new SpringShiroFilter((WebSecurityManager) securityManager, chainResolver);
     }
 

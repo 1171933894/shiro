@@ -42,6 +42,10 @@ package org.apache.shiro.authc;
  *
  * @since 0.1
  */
+
+/**
+ * UsernamePasswordToken类是以用户名作为身份，密码作为凭证。当然它也实现了RememberMeAuthenticationToken接口，提供rememberMe功能。rememberMe功能的实现在后面再分析，在这里不是重点。UsernamePasswordToken很简单，只有构造方法和setter/getter方法。我们需要对UsernamePasswordToken中的身份和凭证要有很好的理解，什么可以作为身份，什么又是凭证
+ */
 public class UsernamePasswordToken implements HostAuthenticationToken, RememberMeAuthenticationToken {
 
     /*--------------------------------------------

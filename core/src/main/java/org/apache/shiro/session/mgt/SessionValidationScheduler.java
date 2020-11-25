@@ -37,16 +37,19 @@ public interface SessionValidationScheduler {
      * @return <code>true</code> if this Scheduler is enabled and ready to begin validation at the appropriate time,
      * <code>false</code> otherwise.
      */
+    // 表示是否已经开始了调度作业
     boolean isEnabled();
 
     /**
      * Enables the session validation job.
      */
+    // 开启具体调度的作业内容
     void enableSessionValidation();
 
     /**
      * Disables the session validation job.
      */
+    // 停止调度作业
     void disableSessionValidation();
 
 }

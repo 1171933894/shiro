@@ -39,6 +39,10 @@ import java.util.Collection;
  *
  * @since 0.1
  */
+
+/**
+ * Shiro提供了两种SessionDAO，第一种是MemorySessionDAO，它将Session存储在内存中；第二种是EnterpriseCacheSessionDAO，可以定义将Session存入到缓存中。由于在使用中我们很大可能需要自定义SessionDAO，下面对SessionDAO也展开分析。MemorySessionDAO是以Map作为存储的，很简单不再说明。我们以EnterpriseCacheSessionDAO来分析。EnterpriseCacheSessionDAO类的继承关系是这样的：EnterpriseCacheSessionDAO->CachingSessionDAO->AbstractSessionDAO
+ */
 public interface SessionDAO {
 
     /**
@@ -58,6 +62,9 @@ public interface SessionDAO {
      * @param session the {@link org.apache.shiro.session.Session} object to create in the EIS.
      * @return the EIS id (e.g. primary key) of the created {@code Session} object.
      */
+    /**
+     * 插入Session(可以是数据库，文件系统，内存，缓存等)
+     */
     Serializable create(Session session);
 
     /**
@@ -69,6 +76,9 @@ public interface SessionDAO {
      * @return the persisted session in the EIS identified by {@code sessionId}.
      * @throws UnknownSessionException if there is no EIS record for any session with the
      *                                 specified {@code sessionId}
+     */
+    /**
+     * 获取Session
      */
     Session readSession(Serializable sessionId) throws UnknownSessionException;
 
@@ -86,6 +96,9 @@ public interface SessionDAO {
      *          if no existing EIS session record exists with the
      *          identifier of {@link Session#getId() session.getSessionId()}
      */
+    /**
+     * 更新Session
+     */
     void update(Session session) throws UnknownSessionException;
 
     /**
@@ -94,6 +107,9 @@ public interface SessionDAO {
      * {@link Session#getId() session.getId()}, then this method does nothing.
      *
      * @param session the session to delete.
+     */
+    /**
+     * 删除Session
      */
     void delete(Session session);
 
@@ -125,6 +141,9 @@ public interface SessionDAO {
      *
      * @return a Collection of {@code Session}s that are considered active, or an
      *         empty collection or {@code null} if there are no active sessions.
+     */
+    /**
+     * 返回所有活动的Session
      */
     Collection<Session> getActiveSessions();
 }

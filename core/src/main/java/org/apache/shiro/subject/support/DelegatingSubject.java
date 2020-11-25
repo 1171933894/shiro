@@ -75,15 +75,21 @@ public class DelegatingSubject implements Subject {
     private static final String RUN_AS_PRINCIPALS_SESSION_KEY =
             DelegatingSubject.class.getName() + ".RUN_AS_PRINCIPALS_SESSION_KEY";
 
+    // 身份凭证集合对象
     protected PrincipalCollection principals;
+    // 是否被认证，表示该Subject是否已经被认证通过
     protected boolean authenticated;
+    // 主机
     protected String host;
+    // 关联的Session
     protected Session session;
     /**
      * @since 1.2
      */
+    // 是否创建Session
     protected boolean sessionCreationEnabled;
 
+    // 安全管理器，DelegatingSubject中所有的操作都是委派给SecurityManager来处理
     protected transient SecurityManager securityManager;
 
     public DelegatingSubject(SecurityManager securityManager) {
@@ -256,13 +262,17 @@ public class DelegatingSubject implements Subject {
     }
 
     public void login(AuthenticationToken token) throws AuthenticationException {
+        // 清除runAs身份
         clearRunAsIdentitiesInternal();
+        // 委派给SecurityManager去执行登录，如果登录成功会返回一个
+        // 携带有认证成功数据的Subject对象
         Subject subject = securityManager.login(this, token);
 
         PrincipalCollection principals;
 
         String host = null;
 
+        // 获取登录后的身份和主机信息
         if (subject instanceof DelegatingSubject) {
             DelegatingSubject delegating = (DelegatingSubject) subject;
             //we have to do this in case there are assumed identities - we don't want to lose the 'real' principals:
@@ -272,19 +282,25 @@ public class DelegatingSubject implements Subject {
             principals = subject.getPrincipals();
         }
 
+        // 如果没有身份，抛出异常
         if (principals == null || principals.isEmpty()) {
             String msg = "Principals returned from securityManager.login( token ) returned a null or " +
                     "empty value.  This value must be non null and populated with one or more elements.";
             throw new IllegalStateException(msg);
         }
+        // 设置身份到当前这个Subject实例中
         this.principals = principals;
+        // 标记为已经认证过
         this.authenticated = true;
+        // 获取主机
         if (token instanceof HostAuthenticationToken) {
             host = ((HostAuthenticationToken) token).getHost();
         }
         if (host != null) {
             this.host = host;
         }
+        // 获取Session(就算认证成功了，Session也不一定存在)
+        // false参数表示在Session不存在的情况下不会主动创建新Session
         Session session = subject.getSession(false);
         if (session != null) {
             this.session = decorate(session);
@@ -363,9 +379,12 @@ public class DelegatingSubject implements Subject {
 
     public void logout() {
         try {
+            // 清除runAs身份
             clearRunAsIdentitiesInternal();
+            // 委派给SecurityManager做登出操作
             this.securityManager.logout(this);
         } finally {
+            // 重置属性
             this.session = null;
             this.principals = null;
             this.authenticated = false;
@@ -431,6 +450,7 @@ public class DelegatingSubject implements Subject {
     // ======================================
 
     public void runAs(PrincipalCollection principals) {
+        // 首先Subject本身需要存在唯一身份
         if (!hasPrincipals()) {
             String msg = "This subject does not yet have an identity.  Assuming the identity of another " +
                     "Subject is only allowed for Subjects with an existing identity.  Try logging this subject in " +
@@ -438,14 +458,19 @@ public class DelegatingSubject implements Subject {
                     "with identities as necessary.";
             throw new IllegalStateException(msg);
         }
+        // 将身份信息存放到Session属性中去
         pushIdentity(principals);
     }
 
     public boolean isRunAs() {
+        // 判断runAs栈中是否有身份
         List<PrincipalCollection> stack = getRunAsPrincipalsStack();
         return !CollectionUtils.isEmpty(stack);
     }
 
+    /**
+     * 从runAs栈中获取身份信息
+     */
     public PrincipalCollection getPreviousPrincipals() {
         PrincipalCollection previousPrincipals = null;
         List<PrincipalCollection> stack = getRunAsPrincipalsStack();
@@ -466,6 +491,7 @@ public class DelegatingSubject implements Subject {
         return popIdentity();
     }
 
+    // 从Session中获取runAs栈
     @SuppressWarnings("unchecked")
     private List<PrincipalCollection> getRunAsPrincipalsStack() {
         Session session = getSession(false);

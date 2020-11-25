@@ -27,6 +27,10 @@ import org.apache.shiro.session.SessionException;
  *
  * @since 0.1
  */
+
+/**
+ * SessionManager用于管理Shiro中的Session信息。Session也就是我们通常说的会话，会话是用户在使用应用程序一段时间内携带的数据。传统的会话一般是基于Web容器(如:Tomcat、EJB环境等)。Shiro提供的Session可以在任何环境中使用，不再依赖于其他容器
+ */
 public interface SessionManager {
 
     /**
@@ -44,6 +48,9 @@ public interface SessionManager {
      * @see SessionFactory#createSession(SessionContext)
      * @since 1.0
      */
+    /**
+     * 开始一个新的Session，context提供一些初始化的数据
+     */
     Session start(SessionContext context);
 
     /**
@@ -56,6 +63,10 @@ public interface SessionManager {
      *         could be acquired.
      * @throws SessionException if a session was found but it was invalid (stopped/expired).
      * @since 1.0
+     */
+    /**
+     * 通过SessionKey查找Session
+     * 如果存在则被找到，如果不存在则返回null；如果找到的Session无效(被停止或过期)则会抛异常
      */
     Session getSession(SessionKey key) throws SessionException;
 }

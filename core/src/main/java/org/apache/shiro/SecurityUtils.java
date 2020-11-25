@@ -28,12 +28,17 @@ import org.apache.shiro.util.ThreadContext;
  *
  * @since 0.2
  */
+
+/**
+ * 在Shiro中提供了一个方便使用的工具类SecurityUtils，SecurityUtils核心功能是获取SecurityManager以及Subject。这两个接口是Shiro提供的外围接口，供开发时使用。
+ */
 public abstract class SecurityUtils {
 
     /**
      * ONLY used as a 'backup' in VM Singleton environments (that is, standalone environments), since the
      * ThreadContext should always be the primary source for Subject instances when possible.
      */
+    // 在SecurityUtils使用static定义SecurityManager，也就是说SecurityManager对象在应用中是单一存在的
     private static volatile SecurityManager securityManager;
 
     /**
@@ -49,6 +54,9 @@ public abstract class SecurityUtils {
      *                               {@link SecurityManager SecurityManager} instance is available with which to obtain
      *                               a {@code Subject}, which which is considered an invalid application configuration
      *                               - a Subject should <em>always</em> be available to the caller.
+     */
+    /**
+     * 首先从ThreadContext中获取，如果不存在，则创建新的Subject，再存放到ThreadContext中，以便下次可以获取
      */
     public static Subject getSubject() {
         Subject subject = ThreadContext.getSubject();
@@ -110,6 +118,9 @@ public abstract class SecurityUtils {
      * @throws UnavailableSecurityManagerException
      *          if there is no {@code SecurityManager} instance available to the
      *          calling code, which typically indicates an invalid application configuration.
+     */
+    /**
+     * 首先从ThreadContext中获取，如果没有，则从SecurityUtils属性securityManager中获取。一定要存在一个SecurityManager实例对象，否则抛异常。
      */
     public static SecurityManager getSecurityManager() throws UnavailableSecurityManagerException {
         SecurityManager securityManager = ThreadContext.getSecurityManager();

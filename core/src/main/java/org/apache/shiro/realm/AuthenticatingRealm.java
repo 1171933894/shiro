@@ -128,18 +128,24 @@ public abstract class AuthenticatingRealm extends CachingRealm implements Initia
     /**
      * Credentials matcher used to determine if the provided credentials match the credentials stored in the data store.
      */
+    // 凭证匹配器，用来匹配凭证是否正确
     private CredentialsMatcher credentialsMatcher;
 
-
+    // 缓存通过认证的认证数据
     private Cache<Object, AuthenticationInfo> authenticationCache;
 
+    // 是否认证缓存
     private boolean authenticationCachingEnabled;
+    // 认证缓存的名称
     private String authenticationCacheName;
 
     /**
      * The class that this realm supports for authentication tokens.  This is used by the
      * default implementation of the {@link Realm#supports(org.apache.shiro.authc.AuthenticationToken)} method to
      * determine whether or not the given authentication token is supported by this realm.
+     */
+    /**
+     * 定义Realm支持的AuthenticationToken类型
      */
     private Class<? extends AuthenticationToken> authenticationTokenClass;
 
@@ -159,21 +165,26 @@ public abstract class AuthenticatingRealm extends CachingRealm implements Initia
     }
 
     public AuthenticatingRealm(CacheManager cacheManager, CredentialsMatcher matcher) {
+        // 默认支持UsernamePasswordToken类型
         authenticationTokenClass = UsernamePasswordToken.class;
 
         //retain backwards compatibility for Shiro 1.1 and earlier.  Setting to true by default will probably cause
         //unexpected results for existing applications:
+        // 认证不缓存
         this.authenticationCachingEnabled = false;
 
+        // 设置认证缓存的名称
         int instanceNumber = INSTANCE_COUNT.getAndIncrement();
         this.authenticationCacheName = getClass().getName() + DEFAULT_AUTHENTICATION_CACHE_SUFFIX;
         if (instanceNumber > 0) {
             this.authenticationCacheName = this.authenticationCacheName + "." + instanceNumber;
         }
 
+        // 设置缓存管理器
         if (cacheManager != null) {
             setCacheManager(cacheManager);
         }
+        // 设置凭证匹配器
         if (matcher != null) {
             setCredentialsMatcher(matcher);
         }
@@ -565,18 +576,22 @@ public abstract class AuthenticatingRealm extends CachingRealm implements Initia
      */
     public final AuthenticationInfo getAuthenticationInfo(AuthenticationToken token) throws AuthenticationException {
 
+        // 从认证缓存中获取认证结果
         AuthenticationInfo info = getCachedAuthenticationInfo(token);
         if (info == null) {
             //otherwise not cached, perform the lookup:
+            // 这是一个抽象方法，子类去完成认证过程
             info = doGetAuthenticationInfo(token);
             log.debug("Looked up AuthenticationInfo [{}] from doGetAuthenticationInfo", info);
             if (token != null && info != null) {
+                // 如果认证通过，则将认证结果缓存起来
                 cacheAuthenticationInfoIfPossible(token, info);
             }
         } else {
             log.debug("Using cached authentication info [{}] to perform credentials matching.", info);
         }
 
+        // 匹配凭证是否正确，如果不正确将会抛出异常
         if (info != null) {
             assertCredentialsMatch(token, info);
         } else {

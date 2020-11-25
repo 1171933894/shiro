@@ -88,6 +88,7 @@ public interface Subject {
      * @return this Subject's application-specific unique identity.
      * @see org.apache.shiro.subject.PrincipalCollection#getPrimaryPrincipal()
      */
+    // 返回可以鉴定Subject唯一性的身份信息，例如：用户名、用户ID等等
     Object getPrincipal();
 
     /**
@@ -103,6 +104,7 @@ public interface Subject {
      * @see #getPrincipal()
      * @see org.apache.shiro.subject.PrincipalCollection#getPrimaryPrincipal()
      */
+    // 以PrincipalCollection形式返回身份信息
     PrincipalCollection getPrincipals();
 
     /**
@@ -329,6 +331,7 @@ public interface Subject {
      *          if the authentication attempt fails.
      * @since 0.9
      */
+    // 登录认证
     void login(AuthenticationToken token) throws AuthenticationException;
 
     /**
@@ -343,6 +346,7 @@ public interface Subject {
      *         by providing valid credentials matching those known to the system, {@code false} otherwise.
      * @since 0.9
      */
+    // 是否已经被认证通过
     boolean isAuthenticated();
 
 
@@ -405,6 +409,7 @@ public interface Subject {
      * @see #getSession(boolean)
      * @since 0.2
      */
+    // 获取关联的Session，如果没有将会创建新Session
     Session getSession();
 
     /**
@@ -423,6 +428,7 @@ public interface Subject {
      *         on the above described logic.
      * @since 0.2
      */
+    // 获取关联的Session，如果Session不存在并且create=false，将不会创建新Session
     Session getSession(boolean create);
 
     /**
@@ -441,6 +447,7 @@ public interface Subject {
      * <p/>
      * Non-HTTP environments may of course use a logged-out subject for login again if desired.
      */
+    // 认证登出
     void logout();
 
     /**
@@ -632,11 +639,15 @@ public interface Subject {
          *
          * @param securityManager the {@code SecurityManager} to use when building the {@code Subject} instance.
          */
+        /**
+         * Subject和SubjectContext是一一对应的
+         */
         public Builder(SecurityManager securityManager) {
             if (securityManager == null) {
                 throw new NullPointerException("SecurityManager method argument cannot be null.");
             }
             this.securityManager = securityManager;
+            // 创建了SubjectContext实例对象
             this.subjectContext = newSubjectContextInstance();
             if (this.subjectContext == null) {
                 throw new IllegalStateException("Subject instance returned from 'newSubjectContextInstance' " +

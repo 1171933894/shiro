@@ -40,9 +40,15 @@ public class SimpleAuthenticationInfo implements MergableAuthenticationInfo, Sal
     /**
      * The principals identifying the account associated with this AuthenticationInfo instance.
      */
+    /**
+     * 身份集合
+     */
     protected PrincipalCollection principals;
     /**
      * The credentials verifying the account principals.
+     */
+    /**
+     * 凭证
      */
     protected Object credentials;
 
@@ -50,6 +56,9 @@ public class SimpleAuthenticationInfo implements MergableAuthenticationInfo, Sal
      * Any salt used in hashing the credentials.
      *
      * @since 1.1
+     */
+    /**
+     * 凭证盐
      */
     protected ByteSource credentialsSalt;
 
@@ -191,10 +200,12 @@ public class SimpleAuthenticationInfo implements MergableAuthenticationInfo, Sal
      */
     @SuppressWarnings("unchecked")
     public void merge(AuthenticationInfo info) {
+        // 判断是否有身份信息，如果没有就返回
         if (info == null || info.getPrincipals() == null || info.getPrincipals().isEmpty()) {
             return;
         }
 
+        // 合并身份集合
         if (this.principals == null) {
             this.principals = info.getPrincipals();
         } else {
@@ -210,10 +221,13 @@ public class SimpleAuthenticationInfo implements MergableAuthenticationInfo, Sal
         //is null, then it can't hurt to pull in a non-null value if one exists.
         //
         //since 1.1:
+        // 凭证盐只是在Realm凭证匹配过程中使用
+        // 如果存在凭证盐，就不用管其他的了，如果没有就使用其他的凭证盐
         if (this.credentialsSalt == null && info instanceof SaltedAuthenticationInfo) {
             this.credentialsSalt = ((SaltedAuthenticationInfo) info).getCredentialsSalt();
         }
 
+        // 合并凭证信息
         Object thisCredentials = getCredentials();
         Object otherCredentials = info.getCredentials();
 
@@ -226,6 +240,7 @@ public class SimpleAuthenticationInfo implements MergableAuthenticationInfo, Sal
             return;
         }
 
+        // 使用集合来合并凭证
         if (!(thisCredentials instanceof Collection)) {
             Set newSet = new HashSet();
             newSet.add(thisCredentials);

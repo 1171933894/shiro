@@ -36,6 +36,9 @@ public interface NativeSessionManager extends SessionManager {
      * @return the time the specified {@code Session} started (was created).
      * @see org.apache.shiro.session.Session#getStartTimestamp()
      */
+    /**
+     * 返回Session被开启的时间
+     */
     Date getStartTimestamp(SessionKey key);
 
     /**
@@ -46,6 +49,9 @@ public interface NativeSessionManager extends SessionManager {
      * @see org.apache.shiro.session.Session#getLastAccessTime()
      * @see org.apache.shiro.session.Session#touch()
      */
+    /**
+     * 获取Session最近访问的时间
+     */
     Date getLastAccessTime(SessionKey key);
 
     /**
@@ -54,6 +60,9 @@ public interface NativeSessionManager extends SessionManager {
      *
      * @param key the session key to use to look up the target session.
      * @return {@code true} if the session is valid (exists and is not stopped or expired), {@code false} otherwise.
+     */
+    /**
+     * 判断Session是否有效
      */
     boolean isValid(SessionKey key);
 
@@ -66,6 +75,9 @@ public interface NativeSessionManager extends SessionManager {
      * @param key the session key to use to look up the target session.
      * @throws org.apache.shiro.session.InvalidSessionException
      *          if the session id is invalid (it does not exist or it is stopped or expired).
+     */
+    /**
+     * 检测Session是否有效，如果无效则抛出异常
      */
     void checkValid(SessionKey key) throws InvalidSessionException;
 
@@ -82,6 +94,11 @@ public interface NativeSessionManager extends SessionManager {
      * @throws org.apache.shiro.session.InvalidSessionException
      *          if the session has been stopped or expired prior to calling this method.
      */
+    /**
+     * 返回Session还有多久过期(毫秒)
+     * 如果是负数，表示Session不会过期；如果是正数，表示Session在这个时间后就会过期。
+     * 如果Session无效调用这个方法会抛异常
+     */
     long getTimeout(SessionKey key) throws InvalidSessionException;
 
     /**
@@ -97,6 +114,10 @@ public interface NativeSessionManager extends SessionManager {
      * @throws org.apache.shiro.session.InvalidSessionException
      *          if the session has been stopped or expired prior to calling this method.
      */
+    /**
+     * 设置过期时间(毫秒)，设置负数表示Session不会过期。
+     * 如果Session无效调用这个方法会抛异常
+     */
     void setTimeout(SessionKey key, long maxIdleTimeInMillis) throws InvalidSessionException;
 
     /**
@@ -108,6 +129,9 @@ public interface NativeSessionManager extends SessionManager {
      *          if the session has been stopped or expired prior to calling this method.
      * @see org.apache.shiro.session.Session#touch
      */
+    /**
+     * 会设置最近访问时间，确保Session没有超时，当然，如果Session已经无效也会抛异常
+     */
     void touch(SessionKey key) throws InvalidSessionException;
 
     /**
@@ -118,6 +142,9 @@ public interface NativeSessionManager extends SessionManager {
      * @return the host name or ip address of the host where the session originated, if known.  If unknown,
      *         this method returns {@code null}.
      */
+    /**
+     * 返回主机名或Ip
+     */
     String getHost(SessionKey key);
 
     /**
@@ -126,6 +153,9 @@ public interface NativeSessionManager extends SessionManager {
      * @param key the session key to use to look up the target session.
      * @throws InvalidSessionException if the session has stopped or expired prior to calling this method.
      * @see org.apache.shiro.session.Session#stop
+     */
+    /**
+     * 停用Session，释放资源
      */
     void stop(SessionKey key) throws InvalidSessionException;
 
@@ -136,6 +166,9 @@ public interface NativeSessionManager extends SessionManager {
      * @return all attribute keys maintained by the target session or an empty collection if there are no attributes.
      * @throws InvalidSessionException if the associated session has stopped or expired prior to calling this method.
      * @see org.apache.shiro.session.Session#getAttributeKeys()
+     */
+    /**
+     * 返回Session中存储的所有属性键
      */
     Collection<Object> getAttributeKeys(SessionKey sessionKey);
 
@@ -148,6 +181,9 @@ public interface NativeSessionManager extends SessionManager {
      * @return the object bound under the {@code attributeKey} or {@code null} if there is no object bound.
      * @throws InvalidSessionException if the specified session has stopped or expired prior to calling this method.
      * @see org.apache.shiro.session.Session#getAttribute(Object key)
+     */
+    /**
+     * 获取Session中的属性
      */
     Object getAttribute(SessionKey sessionKey, Object attributeKey) throws InvalidSessionException;
 
@@ -165,6 +201,9 @@ public interface NativeSessionManager extends SessionManager {
      * @throws InvalidSessionException if the specified session has stopped or expired prior to calling this method.
      * @see org.apache.shiro.session.Session#setAttribute(Object key, Object value)
      */
+    /**
+     * 设置Session中的属性
+     */
     void setAttribute(SessionKey sessionKey, Object attributeKey, Object value) throws InvalidSessionException;
 
     /**
@@ -175,6 +214,9 @@ public interface NativeSessionManager extends SessionManager {
      * @return the object removed or {@code null} if there was no object bound under the specified {@code attributeKey}.
      * @throws InvalidSessionException if the specified session has stopped or expired prior to calling this method.
      * @see org.apache.shiro.session.Session#removeAttribute(Object key)
+     */
+    /**
+     * 删除Session中的属性
      */
     Object removeAttribute(SessionKey sessionKey, Object attributeKey) throws InvalidSessionException;
 

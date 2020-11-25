@@ -42,6 +42,15 @@ import java.util.Date;
  *
  * @since 1.0
  */
+
+/**
+ * AbstractNativeSessionManager中主要功能：
+ *
+ *      引用了SessionListen接口来负责对Session状态的监听。
+ *      提供了创建Session的抽象方法createSession(SessionContext context)和获取Session的抽象方法doGetSession(SessionKey key)，这两个方法都应该从SessionManager接口来实现的。
+ *      提供了onChange，onStart，onStop，afterStopped钩子方法。
+ *
+ */
 public abstract class AbstractNativeSessionManager extends AbstractSessionManager implements NativeSessionManager, EventBusAware {
 
     private static final Logger log = LoggerFactory.getLogger(AbstractSessionManager.class);
@@ -96,11 +105,15 @@ public abstract class AbstractNativeSessionManager extends AbstractSessionManage
     }
 
     public Session start(SessionContext context) {
+        // 抽象方法创建Session
         Session session = createSession(context);
         applyGlobalSessionTimeout(session);
+        // 钩子方法，子类实现
         onStart(session, context);
+        // Session监听器
         notifyStart(session);
         //Don't expose the EIS-tier Session object to the client-tier:
+        // 使用DelegatingSession来委托SessionManger处理
         return createExposedSession(session, context);
     }
 
@@ -228,8 +241,11 @@ public abstract class AbstractNativeSessionManager extends AbstractSessionManage
     }
 
     public void touch(SessionKey key) throws InvalidSessionException {
+        // 获取Session
         Session s = lookupRequiredSession(key);
+        // 调用Session自己提供的功能
         s.touch();
+        // 调用onChange方法作为变更后的后置处理方法
         onChange(s);
     }
 
@@ -278,15 +294,20 @@ public abstract class AbstractNativeSessionManager extends AbstractSessionManage
     }
 
     public void stop(SessionKey key) throws InvalidSessionException {
+        // 获取Session
         Session session = lookupRequiredSession(key);
         try {
             if (log.isDebugEnabled()) {
                 log.debug("Stopping session with id [" + session.getId() + "]");
             }
+            // 调用Session自己提供的功能
             session.stop();
+            // 调用后置处理方法
             onStop(session, key);
+            // 通知监听器
             notifyStop(session);
         } finally {
+            // 调用停止后的后置方法
             afterStopped(session);
         }
     }

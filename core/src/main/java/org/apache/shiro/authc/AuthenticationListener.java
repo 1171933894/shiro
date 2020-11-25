@@ -33,6 +33,9 @@ public interface AuthenticationListener {
      * @param token the authentication token submitted during the {@code Subject} (user)'s authentication attempt.
      * @param info  the authentication-related account data acquired after authentication for the corresponding {@code Subject}.
      */
+    /**
+     * 监听认证成功
+     */
     void onSuccess(AuthenticationToken token, AuthenticationInfo info);
 
     /**
@@ -40,6 +43,9 @@ public interface AuthenticationListener {
      *
      * @param token the authentication token submitted during the {@code Subject} (user)'s authentication attempt.
      * @param ae    the {@code AuthenticationException} that occurred as a result of the attempt.
+     */
+    /**
+     * 监听认证失败
      */
     void onFailure(AuthenticationToken token, AuthenticationException ae);
 
@@ -50,6 +56,9 @@ public interface AuthenticationListener {
      * be triggered if their Session times out.
      *
      * @param principals the identifying principals of the Subject logging out.
+     */
+    /**
+     * 监听用户登出
      */
     void onLogout(PrincipalCollection principals);
 }

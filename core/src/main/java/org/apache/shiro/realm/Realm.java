@@ -60,6 +60,10 @@ import org.apache.shiro.authc.AuthenticationToken;
  * @see org.apache.shiro.authc.pam.ModularRealmAuthenticator ModularRealmAuthenticator
  * @since 0.1
  */
+
+/**
+ * Shiro使用Realm接口作为外部数据源，主要处理认证和授权工作
+ */
 public interface Realm {
 
     /**
@@ -67,6 +71,9 @@ public interface Realm {
      * application must have a unique name.
      *
      * @return the (application-unique) name assigned to this <code>Realm</code>.
+     */
+    /**
+     * Realm必须要有一个唯一的名称
      */
     String getName();
 
@@ -81,6 +88,9 @@ public interface Realm {
      * @param token the AuthenticationToken submitted for the authentication attempt
      * @return <tt>true</tt> if this realm can/will authenticate Subjects represented by specified token,
      *         <tt>false</tt> otherwise.
+     */
+    /**
+     * 判断该Realm是否支持处理给定的token认证
      */
     boolean supports(AuthenticationToken token);
 
@@ -99,6 +109,10 @@ public interface Realm {
      * @throws org.apache.shiro.authc.AuthenticationException
      *          if there is an error obtaining or constructing an AuthenticationInfo object based on the
      *          specified <tt>token</tt> or implementation-specific login behavior fails.
+     */
+    /**
+     * 认证token，并返回已认证的AuthenticationInfo
+     * 如果没有账户可以认证，返回null，如果认证失败抛出异常
      */
     AuthenticationInfo getAuthenticationInfo(AuthenticationToken token) throws AuthenticationException;
 

@@ -136,6 +136,7 @@ public class WildcardPermission implements Permission, Serializable {
     protected WildcardPermission() {
     }
 
+    //默认请求下对字符串大小写是不敏感的
     public WildcardPermission(String wildcardString) {
         this(wildcardString, DEFAULT_CASE_SENSITIVE);
     }
@@ -149,25 +150,30 @@ public class WildcardPermission implements Permission, Serializable {
     }
 
     protected void setParts(String wildcardString, boolean caseSensitive) {
+        // 清除字符串前后空格
         wildcardString = StringUtils.clean(wildcardString);
 
         if (wildcardString == null || wildcardString.isEmpty()) {
             throw new IllegalArgumentException("Wildcard string cannot be null or empty. Make sure permission strings are properly formatted.");
         }
 
+        // 如果大小写不敏感，全部转为小写处理
         if (!caseSensitive) {
             wildcardString = wildcardString.toLowerCase();
         }
 
+        // 首先使用冒号(:)进行一次分隔
         List<String> parts = CollectionUtils.asList(wildcardString.split(PART_DIVIDER_TOKEN));
 
         this.parts = new ArrayList<Set<String>>();
         for (String part : parts) {
+            // 然后再使用逗号(,)进行一次分隔
             Set<String> subparts = CollectionUtils.asSet(part.split(SUBPART_DIVIDER_TOKEN));
 
             if (subparts.isEmpty()) {
                 throw new IllegalArgumentException("Wildcard string cannot contain parts with only dividers. Make sure permission strings are properly formatted.");
             }
+            // 将分割后的所有权限信息存储到this.parts中
             this.parts.add(subparts);
         }
 
@@ -198,14 +204,18 @@ public class WildcardPermission implements Permission, Serializable {
 
     public boolean implies(Permission p) {
         // By default only supports comparisons with other WildcardPermissions
+        //判断类型是否相同
         if (!(p instanceof WildcardPermission)) {
             return false;
         }
 
         WildcardPermission wp = (WildcardPermission) p;
 
+        // 获取parts属性
         List<Set<String>> otherParts = wp.getParts();
 
+        // otherParts会和getParts()逐一匹配，如果getParts()在匹配过程中比otherParts数量少，就暗指省略可以匹配，返回true
+        // 否则的话需要一一进行比较，在比较的过程中如果part不包含通配符(*)，且part不能完全包含otherPart集合，就认为没有权限，返回false。
         int i = 0;
         for (Set<String> otherPart : otherParts) {
             // If this permission has less parts than the other permission, everything after the number of parts contained
@@ -221,6 +231,7 @@ public class WildcardPermission implements Permission, Serializable {
             }
         }
 
+        // 处理getParts()比otherParts长的的情况，如果这样，后面部分必须都是通配符(*)，否则返回false
         // If this permission has more parts than the other parts, only imply it if all of the other parts are wildcards
         for (; i < getParts().size(); i++) {
             Set<String> part = getParts().get(i);

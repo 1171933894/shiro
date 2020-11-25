@@ -62,6 +62,7 @@ public class DefaultFilterChainManager implements FilterChainManager {
         this.filters = new LinkedHashMap<String, Filter>();
         this.filterChains = new LinkedHashMap<String, NamedFilterList>();
         this.globalFilterNames = new ArrayList<>();
+        // 添加默认的过滤器，false参数表示是否需要初始化FilterConfig信息
         addDefaultFilters(false);
     }
 
@@ -70,6 +71,7 @@ public class DefaultFilterChainManager implements FilterChainManager {
         this.filterChains = new LinkedHashMap<String, NamedFilterList>();
         this.globalFilterNames = new ArrayList<>();
         setFilterConfig(filterConfig);
+        // 添加默认的过滤器，需要初始化FilterConfig信息
         addDefaultFilters(true);
     }
 

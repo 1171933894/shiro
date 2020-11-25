@@ -83,13 +83,21 @@ public class SimpleSession implements ValidatingSession, Serializable {
     // http://mail-archives.apache.org/mod_mbox/shiro-user/201109.mbox/%3C4E81BCBD.8060909@metaphysis.net%3E
     //
     // ==============================================================
+    // Session唯一ID
     private transient Serializable id;
+    // 开始时间
     private transient Date startTimestamp;
+    // 结束时间
     private transient Date stopTimestamp;
+    // 最近访问时间
     private transient Date lastAccessTime;
+    // 还有多久过期
     private transient long timeout;
+    // 是否过期
     private transient boolean expired;
+    // Session创建时的主机名
     private transient String host;
+    // Session存储的属性值
     private transient Map<Object, Object> attributes;
 
     public SimpleSession() {

@@ -60,6 +60,9 @@ public interface Authorizer {
      * @see #isPermitted(PrincipalCollection principals,Permission permission)
      * @since 0.9
      */
+    /**
+     * 判断是否有指定的权限
+     */
     boolean isPermitted(PrincipalCollection principals, String permission);
 
     /**
@@ -72,6 +75,9 @@ public interface Authorizer {
      * @param subjectPrincipal the application-specific subject/user identifier.
      * @param permission       the permission that is being checked.
      * @return true if the corresponding Subject/user is permitted, false otherwise.
+     */
+    /**
+     * 判断是否有指定的权限
      */
     boolean isPermitted(PrincipalCollection subjectPrincipal, Permission permission);
 
@@ -89,6 +95,9 @@ public interface Authorizer {
      *         for the associated <tt>Permission</tt> string in the list.  A false value at an index
      *         indicates otherwise.
      * @since 0.9
+     */
+    /**
+     * 判断是否有指定的权限集合
      */
     boolean[] isPermitted(PrincipalCollection subjectPrincipal, String... permissions);
 
@@ -125,6 +134,9 @@ public interface Authorizer {
      * @see #isPermittedAll(PrincipalCollection,Collection)
      * @since 0.9
      */
+    /**
+     * 判断是否有指定的所有权限集合
+     */
     boolean isPermittedAll(PrincipalCollection subjectPrincipal, String... permissions);
 
     /**
@@ -137,6 +149,9 @@ public interface Authorizer {
      * @param subjectPrincipal the application-specific subject/user identifier.
      * @param permissions      the permissions to check.
      * @return true if the user has all of the specified permissions, false otherwise.
+     */
+    /**
+     * 判断是否有指定的所有权限集合
      */
     boolean isPermittedAll(PrincipalCollection subjectPrincipal, Collection<Permission> permissions);
 
@@ -154,6 +169,9 @@ public interface Authorizer {
      * @throws AuthorizationException
      *          if the user does not have the permission.
      * @since 0.9
+     */
+    /**
+     * 检测是否存在权限，否则抛异常
      */
     void checkPermission(PrincipalCollection subjectPrincipal, String permission) throws AuthorizationException;
 
@@ -186,6 +204,9 @@ public interface Authorizer {
      * @throws AuthorizationException if the user does not have all of the given permissions.
      * @since 0.9
      */
+    /**
+     * 检测是否存在权限，否则抛异常
+     */
     void checkPermissions(PrincipalCollection subjectPrincipal, String... permissions) throws AuthorizationException;
 
     /**
@@ -201,6 +222,9 @@ public interface Authorizer {
      * @param permissions      the Permissions to check.
      * @throws AuthorizationException if the user does not have all of the given permissions.
      */
+    /**
+     * 检测是否存在权限，否则抛异常
+     */
     void checkPermissions(PrincipalCollection subjectPrincipal, Collection<Permission> permissions) throws AuthorizationException;
 
     /**
@@ -209,6 +233,9 @@ public interface Authorizer {
      * @param subjectPrincipal the application-specific subject/user identifier.
      * @param roleIdentifier   the application-specific role identifier (usually a role id or role name).
      * @return <tt>true</tt> if the corresponding subject has the specified role, <tt>false</tt> otherwise.
+     */
+    /**
+     * 判断是否有指定的角色
      */
     boolean hasRole(PrincipalCollection subjectPrincipal, String roleIdentifier);
 
@@ -225,6 +252,9 @@ public interface Authorizer {
      *         roles in the given identifiers.  A true value indicates the user has the
      *         role at that index.  False indicates the user does not have the role at that index.
      */
+    /**
+     * 判断是否有指定的角色集合
+     */
     boolean[] hasRoles(PrincipalCollection subjectPrincipal, List<String> roleIdentifiers);
 
     /**
@@ -233,6 +263,9 @@ public interface Authorizer {
      * @param subjectPrincipal the application-specific subject/user identifier.
      * @param roleIdentifiers  the application-specific role identifiers to check (usually role ids or role names).
      * @return true if the user has all the roles, false otherwise.
+     */
+    /**
+     * 判断是否有指定的所有角色集合
      */
     boolean hasAllRoles(PrincipalCollection subjectPrincipal, Collection<String> roleIdentifiers);
 
@@ -245,6 +278,9 @@ public interface Authorizer {
      * @throws AuthorizationException
      *          if the user does not have the role.
      */
+    /**
+     * 检测角色
+     */
     void checkRole(PrincipalCollection subjectPrincipal, String roleIdentifier) throws AuthorizationException;
 
     /**
@@ -255,6 +291,9 @@ public interface Authorizer {
      * @param roleIdentifiers  the application-specific role identifiers to check (usually role ids or role names).
      * @throws AuthorizationException
      *          if the user does not have all of the specified roles.
+     */
+    /**
+     * 检测角色
      */
     void checkRoles(PrincipalCollection subjectPrincipal, Collection<String> roleIdentifiers) throws AuthorizationException;
 
@@ -271,6 +310,9 @@ public interface Authorizer {
      *          if the user does not have all of the specified roles.
      *          
      *  @since 1.1.0
+     */
+    /**
+     * 检测角色
      */
     void checkRoles(PrincipalCollection subjectPrincipal, String... roleIdentifiers) throws AuthorizationException;
     

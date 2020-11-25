@@ -55,6 +55,10 @@ import java.io.Serializable;
  * @see Account
  * @since 0.9
  */
+
+/**
+ * AuthenticationInfo表示被Subject存储的账户，这个账户是经过认证的。而AuthenticationToken中的身份/凭证是用户提交的数据，还没有经过认证，如果认证成功才会被存储在AuthenticationInfo中
+ */
 public interface AuthenticationInfo extends Serializable {
 
     /**

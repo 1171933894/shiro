@@ -61,6 +61,14 @@ import java.util.Collection;
  * @see FirstSuccessfulStrategy
  * @since 0.1
  */
+
+/**
+ * 在ModularRealmAuthenticator中，把认证的权利交给域(Realm)去完成，在Shiro中Realm相当于数据的来源，可以自定义。ModularRealmAuthenticator支持多个Realm进行认证，在多个Realm认证时，需要设置认证策略，策略接口是AuthenticationStrategy。在Shiro中提供了三种认证策略。分别是：
+ *
+ *      AllSuccessfulStrategy：所有Realm认证成功。
+ *      AtLeastOneSuccessfulStrategy：至少有一个Realm认证成功。
+ *      FirstSuccessfulStrategy： 第一个Realm认证成功。
+ */
 public class ModularRealmAuthenticator extends AbstractAuthenticator {
 
     /*--------------------------------------------
@@ -74,12 +82,14 @@ public class ModularRealmAuthenticator extends AbstractAuthenticator {
     /**
      * List of realms that will be iterated through when a user authenticates.
      */
+    // 认证的过程交由Realm去处理
     private Collection<Realm> realms;
 
     /**
      * The authentication strategy to use during authentication attempts, defaults to a
      * {@link org.apache.shiro.authc.pam.AtLeastOneSuccessfulStrategy} instance.
      */
+    // 指定认证策略
     private AuthenticationStrategy authenticationStrategy;
 
     /*--------------------------------------------
@@ -91,6 +101,7 @@ public class ModularRealmAuthenticator extends AbstractAuthenticator {
      * {@link #setAuthenticationStrategy(AuthenticationStrategy) enables}  an
      * {@link org.apache.shiro.authc.pam.AtLeastOneSuccessfulStrategy} by default.
      */
+    // 默认提供策略：至少有一个Realm认证成功就算认证成功
     public ModularRealmAuthenticator() {
         this.authenticationStrategy = new AtLeastOneSuccessfulStrategy();
     }
@@ -170,13 +181,19 @@ public class ModularRealmAuthenticator extends AbstractAuthenticator {
      * @param token the submitted AuthenticationToken representing the subject's (user's) log-in principals and credentials.
      * @return the AuthenticationInfo associated with the user account corresponding to the specified {@code token}
      */
+    /**
+     * // 处理单个Realm
+     */
     protected AuthenticationInfo doSingleRealmAuthentication(Realm realm, AuthenticationToken token) {
+        // 判断realm是否支持处理toke
         if (!realm.supports(token)) {
             String msg = "Realm [" + realm + "] does not support authentication token [" +
                     token + "].  Please ensure that the appropriate Realm implementation is " +
                     "configured correctly or that the realm accepts AuthenticationTokens of this type.";
             throw new UnsupportedTokenException(msg);
         }
+        // realm处理认证过程，处理过程中可能会抛出认证异常AuthenticationException。
+        // 如果认证成功info不会用null。
         AuthenticationInfo info = realm.getAuthenticationInfo(token);
         if (info == null) {
             String msg = "Realm [" + realm + "] was unable to find account data for the " +
@@ -195,10 +212,15 @@ public class ModularRealmAuthenticator extends AbstractAuthenticator {
      * @return an aggregated AuthenticationInfo instance representing account data across all the successfully
      *         consulted realms.
      */
+    // 处理多个Realm
     protected AuthenticationInfo doMultiRealmAuthentication(Collection<Realm> realms, AuthenticationToken token) {
 
         AuthenticationStrategy strategy = getAuthenticationStrategy();
 
+        // 返回一个空的聚合对象
+        // AllSuccessfulStrategy - 返回空的SimpleAuthenticationInfo对象
+        // AtLeastOneSuccessfulStrategy - 返回空的SimpleAuthenticationInfo对象
+        // FirstSuccessfulStrategy - 返回null
         AuthenticationInfo aggregate = strategy.beforeAllAttempts(realms, token);
 
         if (log.isTraceEnabled()) {
@@ -208,6 +230,10 @@ public class ModularRealmAuthenticator extends AbstractAuthenticator {
         for (Realm realm : realms) {
 
             try {
+                // 认证前处理
+                // AllSuccessfulStrategy - 判断realm.supports(token)，如果不支持直接抛异常，返回aggregate
+                // AtLeastOneSuccessfulStrategy - 返回aggregate
+                // FirstSuccessfulStrategy - 返回aggregate，也就是null
                 aggregate = strategy.beforeAttempt(realm, token, aggregate);
             } catch (ShortCircuitIterationException shortCircuitSignal) {
                 // Break from continuing with subsequnet realms on receiving 
@@ -222,6 +248,7 @@ public class ModularRealmAuthenticator extends AbstractAuthenticator {
                 AuthenticationInfo info = null;
                 Throwable t = null;
                 try {
+                    //认证过程是由Realm处理的
                     info = realm.getAuthenticationInfo(token);
                 } catch (Throwable throwable) {
                     t = throwable;
@@ -231,6 +258,10 @@ public class ModularRealmAuthenticator extends AbstractAuthenticator {
                     }
                 }
 
+                // 认证后处理，
+                // AllSuccessfulStrategy - 如果有异常会抛出异常, 如果没有就合并info和aggregate
+                // AtLeastOneSuccessfulStrategy - 如果有异常并不会抛出，只是会合并info和aggregate
+                // FirstSuccessfulStrategy - 如果aggregate存在，则返回aggregate；否则返回info
                 aggregate = strategy.afterAttempt(realm, token, info, aggregate, t);
 
             } else {
@@ -238,6 +269,9 @@ public class ModularRealmAuthenticator extends AbstractAuthenticator {
             }
         }
 
+        // AllSuccessfulStrategy - 返回aggregate
+        // AtLeastOneSuccessfulStrategy - 判断aggregate不为空，否则抛异常
+        // FirstSuccessfulStrategy - 返回aggregate
         aggregate = strategy.afterAllAttempts(token, aggregate);
 
         return aggregate;
@@ -267,8 +301,10 @@ public class ModularRealmAuthenticator extends AbstractAuthenticator {
      *                                 for the given principal and credentials.
      */
     protected AuthenticationInfo doAuthenticate(AuthenticationToken authenticationToken) throws AuthenticationException {
+        // 判断realms属性，必须要有Realm
         assertRealmsConfigured();
         Collection<Realm> realms = getRealms();
+        // 分支：如果只有一个就按照单个流程处理，如果有多个Realm就按照多个流程走认证策略。
         if (realms.size() == 1) {
             return doSingleRealmAuthentication(realms.iterator().next(), authenticationToken);
         } else {

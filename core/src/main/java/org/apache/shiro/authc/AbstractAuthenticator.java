@@ -40,6 +40,10 @@ import java.util.Collection;
  *
  * @since 0.1
  */
+
+/**
+ * 和AbstractSessionManager一样，AbstractAuthenticator主要功能也是提供监听器，对认证过程中的状态进行监听。在认证过程中监听成功、失败、登出情况
+ */
 public abstract class AbstractAuthenticator implements Authenticator, LogoutAware {
 
     /*-------------------------------------------
@@ -187,6 +191,7 @@ public abstract class AbstractAuthenticator implements Authenticator, LogoutAwar
      */
     public final AuthenticationInfo authenticate(AuthenticationToken token) throws AuthenticationException {
 
+        // Token参数异常
         if (token == null) {
             throw new IllegalArgumentException("Method argument (authentication token) cannot be null.");
         }
@@ -195,6 +200,7 @@ public abstract class AbstractAuthenticator implements Authenticator, LogoutAwar
 
         AuthenticationInfo info;
         try {
+            // 执行认证过程的抽象方法，子类去实现
             info = doAuthenticate(token);
             if (info == null) {
                 String msg = "No account information found for authentication token [" + token + "] by this " +
@@ -216,6 +222,7 @@ public abstract class AbstractAuthenticator implements Authenticator, LogoutAwar
                     log.warn(msg, t);
             }
             try {
+                // 认证失败了，通知监听器
                 notifyFailure(token, ae);
             } catch (Throwable t2) {
                 if (log.isWarnEnabled()) {
@@ -232,6 +239,7 @@ public abstract class AbstractAuthenticator implements Authenticator, LogoutAwar
 
         log.debug("Authentication successful for token [{}].  Returned account [{}]", token, info);
 
+        // 认证成功，通知监听器
         notifySuccess(token, info);
 
         return info;

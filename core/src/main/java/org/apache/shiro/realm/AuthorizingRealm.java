@@ -76,12 +76,16 @@ public abstract class AuthorizingRealm extends AuthenticatingRealm
     /**
      * The cache used by this realm to store AuthorizationInfo instances associated with individual Subject principals.
      */
+    //是否使用缓存
     private boolean authorizationCachingEnabled;
+    //缓存被认证过的信息
     private Cache<Object, AuthorizationInfo> authorizationCache;
+    //授权缓存名称
     private String authorizationCacheName;
 
+    //权限解析器
     private PermissionResolver permissionResolver;
-
+    //角色解析器
     private RolePermissionResolver permissionRoleResolver;
 
     /*-------------------------------------------
@@ -104,10 +108,11 @@ public abstract class AuthorizingRealm extends AuthenticatingRealm
         super();
         if (cacheManager != null) setCacheManager(cacheManager);
         if (matcher != null) setCredentialsMatcher(matcher);
-
+        // 默认开启缓存
         this.authorizationCachingEnabled = true;
+        //通配符权限解析器
         this.permissionResolver = new WildcardPermissionResolver();
-
+        //设置缓存名称
         int instanceNumber = INSTANCE_COUNT.getAndIncrement();
         this.authorizationCacheName = getClass().getName() + DEFAULT_AUTHORIZATION_CACHE_SUFFIX;
         if (instanceNumber > 0) {
@@ -228,7 +233,7 @@ public abstract class AuthorizingRealm extends AuthenticatingRealm
     }
 
     private Cache<Object, AuthorizationInfo> getAuthorizationCacheLazy() {
-
+        // 首先authorizationCache会为空
         if (this.authorizationCache == null) {
 
             if (log.isDebugEnabled()) {
@@ -238,6 +243,7 @@ public abstract class AuthorizingRealm extends AuthenticatingRealm
             CacheManager cacheManager = getCacheManager();
 
             if (cacheManager != null) {
+                // 根据缓存名称获取缓存对象
                 String cacheName = getAuthorizationCacheName();
                 if (log.isDebugEnabled()) {
                     log.debug("CacheManager [" + cacheManager + "] has been configured.  Building " +
@@ -320,12 +326,17 @@ public abstract class AuthorizingRealm extends AuthenticatingRealm
             log.trace("Retrieving AuthorizationInfo for principals [" + principals + "]");
         }
 
+        // 获取缓存对象，如果没有开启缓存功能，则返回null
+        // 这里会调用我们在前面分析过的getAuthorizationCacheLazy()方法
         Cache<Object, AuthorizationInfo> cache = getAvailableAuthorizationCache();
         if (cache != null) {
             if (log.isTraceEnabled()) {
                 log.trace("Attempting to retrieve the AuthorizationInfo from cache.");
             }
+            // 获取凭证使用授权时的缓存Key，这个方法直接返回principals本身
+            // 在业务处理过程中可以对该方法进行重写
             Object key = getAuthorizationCacheKey(principals);
+            //从缓存中获取AuthorizationInfo认证信息
             info = cache.get(key);
             if (log.isTraceEnabled()) {
                 if (info == null) {
@@ -336,7 +347,8 @@ public abstract class AuthorizingRealm extends AuthenticatingRealm
             }
         }
 
-
+        // 如果没有开启缓存或缓存中不存在，则需要重doGetAuthorizationInfo(principals)方法中获取
+        // 这个方法是抽象方法由子类实现如何获取
         if (info == null) {
             // Call template method if the info was not found in a cache
             info = doGetAuthorizationInfo(principals);
@@ -345,6 +357,7 @@ public abstract class AuthorizingRealm extends AuthenticatingRealm
                 if (log.isTraceEnabled()) {
                     log.trace("Caching authorization info for principals: [" + principals + "].");
                 }
+                //如果获取成功，则存放到缓存中去
                 Object key = getAuthorizationCacheKey(principals);
                 cache.put(key, info);
             }
@@ -457,7 +470,9 @@ public abstract class AuthorizingRealm extends AuthenticatingRealm
     }
 
     public boolean isPermitted(PrincipalCollection principals, String permission) {
+        //使用权限解析器解析获取权限对象
         Permission p = getPermissionResolver().resolvePermission(permission);
+        //判断是否存在权限
         return isPermitted(principals, p);
     }
 
@@ -488,7 +503,9 @@ public abstract class AuthorizingRealm extends AuthenticatingRealm
     }
 
     public boolean[] isPermitted(PrincipalCollection principals, List<Permission> permissions) {
+        // 通过凭证获取认证信息
         AuthorizationInfo info = getAuthorizationInfo(principals);
+        // 判断认证信息是否存在给定的权限
         return isPermitted(permissions, info);
     }
 

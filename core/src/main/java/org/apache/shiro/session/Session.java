@@ -46,12 +46,18 @@ public interface Session {
      *
      * @return The unique identifier assigned to the session upon creation.
      */
+    /**
+     * 返回表示Session的唯一ID
+     */
     Serializable getId();
 
     /**
      * Returns the time the session was started; that is, the time the system created the instance.
      *
      * @return The time the system created the session.
+     */
+    /**
+     * 返回Session的开始时间
      */
     Date getStartTimestamp();
 
@@ -61,6 +67,9 @@ public interface Session {
      *
      * @return The time the user last interacted with the system.
      * @see #touch()
+     */
+    /**
+     * 返回最近使用的时间
      */
     Date getLastAccessTime();
 
@@ -78,6 +87,9 @@ public interface Session {
      * @return the time in milliseconds the session may remain idle before expiring.
      * @throws InvalidSessionException if the session has been stopped or expired prior to calling this method.
      * @since 0.2
+     */
+    /**
+     * 返回还有多久Session过期(毫秒)
      */
     long getTimeout() throws InvalidSessionException;
 
@@ -97,6 +109,9 @@ public interface Session {
      * @throws InvalidSessionException if the session has been stopped or expired prior to calling this method.
      * @since 0.2
      */
+    /**
+     * 设置超时时间(毫秒)
+     */
     void setTimeout(long maxIdleTimeInMillis) throws InvalidSessionException;
 
     /**
@@ -105,6 +120,9 @@ public interface Session {
      *
      * @return the host name or IP string of the host that originated this session, or {@code null}
      *         if the host address is unknown.
+     */
+    /**
+     * 返回Session创建时的主机名或地址
      */
     String getHost();
 
@@ -138,6 +156,9 @@ public interface Session {
      *
      * @throws InvalidSessionException if this session has stopped or expired prior to calling this method.
      */
+    /**
+     * 更新最近访问时间，确保Session不会过期
+     */
     void touch() throws InvalidSessionException;
 
     /**
@@ -157,6 +178,9 @@ public interface Session {
      *
      * @throws InvalidSessionException if this session has stopped or expired prior to calling this method.
      */
+    /**
+     * 设置Session停止使用，并释放相关资源
+     */
     void stop() throws InvalidSessionException;
 
     /**
@@ -167,6 +191,9 @@ public interface Session {
      *         there are no session attributes.
      * @throws InvalidSessionException if this session has stopped or expired prior to calling this method.
      * @since 0.2
+     */
+    /**
+     * 返回该Session存储的所有属性键
      */
     Collection<Object> getAttributeKeys() throws InvalidSessionException;
 
@@ -179,6 +206,9 @@ public interface Session {
      *         no object bound under that name.
      * @throws InvalidSessionException if this session has stopped or expired prior to calling
      *                                 this method.
+     */
+    /**
+     * 获取Session属性
      */
     Object getAttribute(Object key) throws InvalidSessionException;
 
@@ -195,6 +225,9 @@ public interface Session {
      * @throws InvalidSessionException if this session has stopped or expired prior to calling
      *                                 this method.
      */
+    /**
+     * 设置Session属性
+     */
     void setAttribute(Object key, Object value) throws InvalidSessionException;
 
     /**
@@ -205,6 +238,9 @@ public interface Session {
      *         {@code key}.
      * @throws InvalidSessionException if this session has stopped or expired prior to calling
      *                                 this method.
+     */
+    /**
+     * 删除Session属性
      */
     Object removeAttribute(Object key) throws InvalidSessionException;
 }

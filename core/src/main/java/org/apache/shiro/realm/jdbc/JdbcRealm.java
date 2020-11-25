@@ -61,6 +61,10 @@ import java.util.Set;
  *
  * @since 0.2
  */
+
+/**
+ * JdbcRealm类可以直接和数据库连接，从数据中获取用户名、密码、角色、权限等数据信息。通过和数据库的直接连接来判断认证是否正确，是否有角色权限功能
+ */
 public class JdbcRealm extends AuthorizingRealm {
 
     //TODO - complete JavaDoc
@@ -71,20 +75,30 @@ public class JdbcRealm extends AuthorizingRealm {
     /**
      * The default query used to retrieve account data for the user.
      */
+    // 通过用户名查找密码的Sql语句
     protected static final String DEFAULT_AUTHENTICATION_QUERY = "select password from users where username = ?";
     
     /**
      * The default query used to retrieve account data for the user when {@link #saltStyle} is COLUMN.
+     */
+    /**
+     * 通过用户名称查找密码和加密盐的Sql语句
      */
     protected static final String DEFAULT_SALTED_AUTHENTICATION_QUERY = "select password, password_salt from users where username = ?";
 
     /**
      * The default query used to retrieve the roles that apply to a user.
      */
+    /**
+     * 通过用户名查找用户所有角色
+     */
     protected static final String DEFAULT_USER_ROLES_QUERY = "select role_name from user_roles where username = ?";
 
     /**
      * The default query used to retrieve permissions that apply to a particular role.
+     */
+    /**
+     * 通过角色名称查找角色拥有的权限
      */
     protected static final String DEFAULT_PERMISSIONS_QUERY = "select permission from roles_permissions where role_name = ?";
 
@@ -98,21 +112,33 @@ public class JdbcRealm extends AuthorizingRealm {
      *   <li>EXTERNAL - salt is not stored in the database. {@link #getSaltForUser(String)} will be called
      *       to get the salt</li></ul>
      */
+    /**
+     * 定义了几种加盐模式：
+     *   NO_SALT - 密码没有加密盐
+     *   CRYPT - unix加密（这种模式目前还支持）
+     *   COLUMN - 加密盐存储在数据库表字段中
+     *   EXTERNAL - 加密盐没有存储在数据库
+     */
     public enum SaltStyle {NO_SALT, CRYPT, COLUMN, EXTERNAL};
 
     /*--------------------------------------------
     |    I N S T A N C E   V A R I A B L E S    |
     ============================================*/
+    // 数据库数据源
     protected DataSource dataSource;
 
+    // 查询密码和加密盐的SQL
     protected String authenticationQuery = DEFAULT_AUTHENTICATION_QUERY;
 
+    // 查询用户角色的SQL
     protected String userRolesQuery = DEFAULT_USER_ROLES_QUERY;
 
+    // 查询角色拥有权限的SQL
     protected String permissionsQuery = DEFAULT_PERMISSIONS_QUERY;
 
     protected boolean permissionsLookupEnabled = false;
-    
+
+    // 密码没有加密盐模式
     protected SaltStyle saltStyle = SaltStyle.NO_SALT;
 
     protected boolean saltIsBase64Encoded = true;
@@ -221,17 +247,19 @@ public class JdbcRealm extends AuthorizingRealm {
 
     protected AuthenticationInfo doGetAuthenticationInfo(AuthenticationToken token) throws AuthenticationException {
 
+        // 只支持UsernamePasswordToken类型
         UsernamePasswordToken upToken = (UsernamePasswordToken) token;
-        String username = upToken.getUsername();
+        String username = upToken.getUsername();// 用户名
 
         // Null username is invalid
-        if (username == null) {
+        if (username == null) {// 用户名空判断
             throw new AccountException("Null usernames are not allowed by this realm.");
         }
 
         Connection conn = null;
         SimpleAuthenticationInfo info = null;
         try {
+            // 获取数据库连接
             conn = dataSource.getConnection();
 
             String password = null;
@@ -251,6 +279,7 @@ public class JdbcRealm extends AuthorizingRealm {
                 break;
             case EXTERNAL:
                 password = getPasswordForUser(conn, username)[0];
+                // 以用户名作为加密盐
                 salt = getSaltForUser(username);
             }
 
@@ -258,6 +287,7 @@ public class JdbcRealm extends AuthorizingRealm {
                 throw new UnknownAccountException("No account found for user [" + username + "]");
             }
 
+            // 创建一个认证信息
             info = new SimpleAuthenticationInfo(username, password.toCharArray(), getName());
             
             if (salt != null) {
@@ -277,6 +307,7 @@ public class JdbcRealm extends AuthorizingRealm {
             // Rethrow any SQL errors as an authentication exception
             throw new AuthenticationException(message, e);
         } finally {
+            // 关闭数据连接
             JdbcUtils.closeConnection(conn);
         }
 
@@ -337,25 +368,31 @@ public class JdbcRealm extends AuthorizingRealm {
      *
      * @see #getAuthorizationInfo(org.apache.shiro.subject.PrincipalCollection)
      */
+    // 授权过程
     @Override
     protected AuthorizationInfo doGetAuthorizationInfo(PrincipalCollection principals) {
 
         //null usernames are invalid
+        // 身份不能为空
         if (principals == null) {
             throw new AuthorizationException("PrincipalCollection method argument cannot be null.");
         }
 
+        // 从身份中获取用户名
         String username = (String) getAvailablePrincipal(principals);
 
         Connection conn = null;
         Set<String> roleNames = null;
         Set<String> permissions = null;
         try {
+            // 获取数据库连接
             conn = dataSource.getConnection();
 
+            // 获取角色集合
             // Retrieve roles and permissions from database
             roleNames = getRoleNamesForUser(conn, username);
             if (permissionsLookupEnabled) {
+                // 获取权限集合
                 permissions = getPermissions(conn, username, roleNames);
             }
 
@@ -372,6 +409,7 @@ public class JdbcRealm extends AuthorizingRealm {
         }
 
         SimpleAuthorizationInfo info = new SimpleAuthorizationInfo(roleNames);
+        // 返回带有角色权限的认证信息
         info.setStringPermissions(permissions);
         return info;
 

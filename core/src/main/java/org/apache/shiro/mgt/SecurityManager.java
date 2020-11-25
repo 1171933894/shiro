@@ -54,6 +54,12 @@ import org.apache.shiro.subject.SubjectContext;
  * @see org.apache.shiro.mgt.DefaultSecurityManager
  * @since 0.2
  */
+
+/**
+ * 在Shiro中SecurityManager是最核心的组件，Shiro架构的心脏，用来协调内部各安全组件，管理内部组件实例，并通过它来提供安全管理的各种服务。当Shiro与一个Subject进行交互时，实质上是幕后的SecurityManager处理所有繁重的Subject安全操作。
+ *
+ * SecurityManager继承了3个核心接口Authenticator, Authorizer, SessionManager，这3个接口我们在前面都已经详细的分析过了。另外SecurityManager还提供了用于登入登出和创建Subject的方法。
+ */
 public interface SecurityManager extends Authenticator, Authorizer, SessionManager {
 
     /**
@@ -74,6 +80,9 @@ public interface SecurityManager extends Authenticator, Authorizer, SessionManag
      * @throws AuthenticationException if the login attempt failed.
      * @since 1.0
      */
+    /**
+     * 登录
+     */
     Subject login(Subject subject, AuthenticationToken authenticationToken) throws AuthenticationException;
 
     /**
@@ -88,6 +97,9 @@ public interface SecurityManager extends Authenticator, Authorizer, SessionManag
      *
      * @param subject the subject to log out.
      * @since 1.0
+     */
+    /**
+     * 登出
      */
     void logout(Subject subject);
 
@@ -108,6 +120,9 @@ public interface SecurityManager extends Authenticator, Authorizer, SessionManag
      * @see SubjectFactory#createSubject(SubjectContext)
      * @see Subject.Builder
      * @since 1.0
+     */
+    /**
+     * 创建Subject
      */
     Subject createSubject(SubjectContext context);
 

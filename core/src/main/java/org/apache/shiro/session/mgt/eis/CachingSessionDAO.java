@@ -50,20 +50,32 @@ public abstract class CachingSessionDAO extends AbstractSessionDAO implements Ca
     /**
      * The default active sessions cache name, equal to {@code shiro-activeSessionCache}.
      */
+    /**
+     * 默认Session缓存名称
+     */
     public static final String ACTIVE_SESSION_CACHE_NAME = "shiro-activeSessionCache";
 
     /**
      * The CacheManager to use to acquire the Session cache.
+     */
+    /**
+     * 缓存管理器
      */
     private CacheManager cacheManager;
 
     /**
      * The Cache instance responsible for caching Sessions.
      */
+    /**
+     * 存储Session的缓存对象
+     */
     private Cache<Serializable, Session> activeSessions;
 
     /**
      * The name of the session cache, defaults to {@link #ACTIVE_SESSION_CACHE_NAME}.
+     */
+    /**
+     * Session缓存名
      */
     private String activeSessionsCacheName = ACTIVE_SESSION_CACHE_NAME;
 
@@ -180,8 +192,12 @@ public abstract class CachingSessionDAO extends AbstractSessionDAO implements Ca
      *
      * @param session Session object to create in the EIS and then cache.
      */
+    // 接口方法，创建Sessio
     public Serializable create(Session session) {
+        // 相当于对父类方法做了后置缓存处理
         Serializable sessionId = super.create(session);
+        // 相当于对父类方法做了后置缓存处理
+        // 实际上就是调用Cache#put()方法，将Session存储
         cache(session, sessionId);
         return sessionId;
     }
@@ -255,7 +271,10 @@ public abstract class CachingSessionDAO extends AbstractSessionDAO implements Ca
      * @return the session identified by {@code sessionId} in the EIS.
      * @throws UnknownSessionException if the id specified does not correspond to any session in the cache or EIS.
      */
+    // 实现父类抽象方法，获取Session
     public Session readSession(Serializable sessionId) throws UnknownSessionException {
+        // 相当于对父类方法做了前置处理
+        // 先从缓存中获取，如果缓存中没有再调用真实方法
         Session s = getCachedSession(sessionId);
         if (s == null) {
             s = super.readSession(sessionId);
@@ -273,8 +292,11 @@ public abstract class CachingSessionDAO extends AbstractSessionDAO implements Ca
      * @throws UnknownSessionException if no existing EIS session record exists with the
      *                                 identifier of {@link Session#getId() session.getId()}
      */
+    // 修改Session
     public void update(Session session) throws UnknownSessionException {
+        // 抽象方法，修改Session前置处理
         doUpdate(session);
+        // 将Session更新到缓存中
         if (session instanceof ValidatingSession) {
             if (((ValidatingSession) session).isValid()) {
                 cache(session, session.getId());
@@ -299,8 +321,11 @@ public abstract class CachingSessionDAO extends AbstractSessionDAO implements Ca
      *
      * @param session the session to remove from caches and permanently delete from the EIS.
      */
+    // 删除Session
     public void delete(Session session) {
+        // 从缓存中删除
         uncache(session);
+        // 删除后置方法
         doDelete(session);
     }
 

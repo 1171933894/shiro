@@ -45,6 +45,10 @@ import java.util.concurrent.atomic.AtomicInteger;
  * @see #getAvailablePrincipal(org.apache.shiro.subject.PrincipalCollection)
  * @since 0.9
  */
+
+/**
+ * CachingRealm是带有缓存功能的Realm抽象实现。在CachingRealm中提供了对Realm进行缓存功能的缓存管理器CacheManager，但并没有实现具体缓存什么。在CachingRealm中提供了对onLogout的处理，该方法从LogoutAware实现来，用来处理用户登出后清理缓存数据。Shiro默认对Realm开启缓存功能。
+ */
 public abstract class CachingRealm implements Realm, Nameable, CacheManagerAware, LogoutAware {
 
     private static final Logger log = LoggerFactory.getLogger(CachingRealm.class);
@@ -56,8 +60,11 @@ public abstract class CachingRealm implements Realm, Nameable, CacheManagerAware
     /*--------------------------------------------
     |    I N S T A N C E   V A R I A B L E S    |
     ============================================*/
+    // Realm名称
     private String name;
+    // 是否开启缓存，默认构造方法开启缓存
     private boolean cachingEnabled;
+    // 缓存管理器
     private CacheManager cacheManager;
 
     /**

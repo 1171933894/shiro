@@ -44,17 +44,25 @@ public class DefaultSessionManager extends AbstractValidatingSessionManager impl
 
     private static final Logger log = LoggerFactory.getLogger(DefaultSessionManager.class);
 
+    // 从名称上看就知道这个创建Session的工厂接口
     private SessionFactory sessionFactory;
 
+    // DAO是做数据存储的，所以SessionDAO负责Session的CRUD操作
     protected SessionDAO sessionDAO;  //todo - move SessionDAO up to AbstractValidatingSessionManager?
 
+    // 缓存管理器，这个很好理解，Session是频繁使用的对象，需要采用缓存功能
     private CacheManager cacheManager;
 
+    // 是否删除无效的Session
     private boolean deleteInvalidSessions;
 
+    // 默认构造方法
     public DefaultSessionManager() {
+        // 删除无效Session
         this.deleteInvalidSessions = true;
+        // SimpleSessionFactory工厂创建SimpleSession实例
         this.sessionFactory = new SimpleSessionFactory();
+        // 用内存存储Session
         this.sessionDAO = new MemorySessionDAO();
     }
 

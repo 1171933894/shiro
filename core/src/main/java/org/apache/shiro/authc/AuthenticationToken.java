@@ -73,6 +73,9 @@ public interface AuthenticationToken extends Serializable {
      * @return the account identity submitted during the authentication process.
      * @see UsernamePasswordToken
      */
+    /**
+     *  获取身份
+     */
     Object getPrincipal();
 
     /**
@@ -88,6 +91,9 @@ public interface AuthenticationToken extends Serializable {
      * any credential mechanism.
      *
      * @return the credential submitted by the user during the authentication process.
+     */
+    /**
+     *  获取凭证
      */
     Object getCredentials();
 

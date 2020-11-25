@@ -76,8 +76,11 @@ public class DefaultSecurityManager extends SessionsSecurityManager {
 
     private static final Logger log = LoggerFactory.getLogger(DefaultSecurityManager.class);
 
+    // rememberMe管理器
     protected RememberMeManager rememberMeManager;
+    // 用来存储Subject对象的，和SessionDAO类似
     protected SubjectDAO subjectDAO;
+    // 从名称上看就知道是创建Subject实例的工厂对象
     protected SubjectFactory subjectFactory;
 
     /**
@@ -177,14 +180,17 @@ public class DefaultSecurityManager extends SessionsSecurityManager {
      *         authenticated subject.
      */
     protected Subject createSubject(AuthenticationToken token, AuthenticationInfo info, Subject existing) {
+        // 创建Subject上下文，设置相关的认证信息
         SubjectContext context = createSubjectContext();
         context.setAuthenticated(true);
         context.setAuthenticationToken(token);
         context.setAuthenticationInfo(info);
         context.setSecurityManager(this);
+        // 把登录的Subject也关联到上下文
         if (existing != null) {
             context.setSubject(existing);
         }
+        // 真实的去创建一个Subject实例
         return createSubject(context);
     }
 
@@ -272,9 +278,11 @@ public class DefaultSecurityManager extends SessionsSecurityManager {
     public Subject login(Subject subject, AuthenticationToken token) throws AuthenticationException {
         AuthenticationInfo info;
         try {
+            // 认证获得AuthenticationInfo信息，如果异常，处理失败情况
             info = authenticate(token);
         } catch (AuthenticationException ae) {
             try {
+                // 登录失败后处理rememberMe
                 onFailedLogin(token, ae, subject);
             } catch (Exception e) {
                 if (log.isInfoEnabled()) {
@@ -282,13 +290,18 @@ public class DefaultSecurityManager extends SessionsSecurityManager {
                             "exception.  Logging and propagating original AuthenticationException.", e);
                 }
             }
+            // 注意，异常会继续抛出
             throw ae; //propagate
         }
 
+        // 认证成功就创建一个已经登录的Subject实例
+        // 注意: subject就是用户登录时调用subject.login(token)的那个实例
         Subject loggedIn = createSubject(token, info, subject);
 
+        // 登录成功后处理rememberMe
         onSuccessfulLogin(token, info, loggedIn);
 
+        // 返回登录成功后的Subject实例，这个实例的信息会设置到subject中去
         return loggedIn;
     }
 
@@ -332,26 +345,32 @@ public class DefaultSecurityManager extends SessionsSecurityManager {
      */
     public Subject createSubject(SubjectContext subjectContext) {
         //create a copy so we don't modify the argument's backing map:
+        // 拷贝一份SubjectContext，不去修改传进来的参数
         SubjectContext context = copy(subjectContext);
 
         //ensure that the context has a SecurityManager instance, and if not, add one:
+        // 确保存在SecurityManager实例，如果没有就从SecurityUtils.getSecurityManager()获取
         context = ensureSecurityManager(context);
 
         //Resolve an associated Session (usually based on a referenced session ID), and place it in the context before
         //sending to the SubjectFactory.  The SubjectFactory should not need to know how to acquire sessions as the
         //process is often environment specific - better to shield the SF from these details:
+        // 为context设置Session
         context = resolveSession(context);
 
         //Similarly, the SubjectFactory should not require any concept of RememberMe - translate that here first
         //if possible before handing off to the SubjectFactory:
+        // 为context设置身份信息
         context = resolvePrincipals(context);
 
+        // 创建Subject，是由SubjectFactory去创建的
         Subject subject = doCreateSubject(context);
 
         //save this subject for future reference if necessary:
         //(this is needed here in case rememberMe principals were resolved and they need to be stored in the
         //session, so we don't constantly rehydrate the rememberMe PrincipalCollection on every operation).
         //Added in 1.2:
+        // 使用SubjectDAO保存subject
         save(subject);
 
         return subject;
@@ -551,6 +570,7 @@ public class DefaultSecurityManager extends SessionsSecurityManager {
             throw new IllegalArgumentException("Subject method argument cannot be null.");
         }
 
+        // 登出前置处理，处理rememberMe功能的登出
         beforeLogout(subject);
 
         PrincipalCollection principals = subject.getPrincipals();
@@ -559,12 +579,14 @@ public class DefaultSecurityManager extends SessionsSecurityManager {
                 log.debug("Logging out subject with primary principal {}", principals.getPrimaryPrincipal());
             }
             Authenticator authc = getAuthenticator();
+            // 认证器登出处理，只要是清理缓存的一些身份等信息，发起监听器监听登出操作
             if (authc instanceof LogoutAware) {
                 ((LogoutAware) authc).onLogout(principals);
             }
         }
 
         try {
+            // 从SubjectDAO中删除Subject
             delete(subject);
         } catch (Exception e) {
             if (log.isDebugEnabled()) {
@@ -573,6 +595,7 @@ public class DefaultSecurityManager extends SessionsSecurityManager {
             }
         } finally {
             try {
+                // 将Subject关联的Session停用
                 stopSession(subject);
             } catch (Exception e) {
                 if (log.isDebugEnabled()) {

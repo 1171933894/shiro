@@ -49,13 +49,16 @@ public abstract class AbstractValidatingSessionManager extends AbstractNativeSes
      */
     public static final long DEFAULT_SESSION_VALIDATION_INTERVAL = MILLIS_PER_HOUR;
 
+    // 标识是否需要校验Sesion
     protected boolean sessionValidationSchedulerEnabled;
 
     /**
      * Scheduler used to validate sessions on a regular basis.
      */
+    // 从名称上看，我们就知道这个一个调度器。用来定时调度校验Session
     protected SessionValidationScheduler sessionValidationScheduler;
 
+    // 调度器调度的时间间隔
     protected long sessionValidationInterval;
 
     public AbstractValidatingSessionManager() {
@@ -80,8 +83,14 @@ public abstract class AbstractValidatingSessionManager extends AbstractNativeSes
         return sessionValidationScheduler;
     }
 
+    /**
+     * 这个方法就是判断是否需要校验，如果需要校验就去开启调度作业
+     **/
     private void enableSessionValidationIfNecessary() {
         SessionValidationScheduler scheduler = getSessionValidationScheduler();
+        // 首先，判断是否需要校验Session，如果为false，则永远不会开启校验，根本就不判断scheduler的状态；
+        // 其次，如果需要校验Session，会去判断scheduler== null或scheduler没有启动，在这两种情况下都会去开启调度任务
+        // 也就是说，如果任务没有开启就去开启，如果已经开启了，就不会在处理。
         if (isSessionValidationSchedulerEnabled() && (scheduler == null || !scheduler.isEnabled())) {
             enableSessionValidation();
         }
@@ -131,11 +140,19 @@ public abstract class AbstractValidatingSessionManager extends AbstractNativeSes
      */
     protected abstract Session retrieveSession(SessionKey key) throws UnknownSessionException;
 
+    /**
+     * 实现createSession方法
+     */
     protected Session createSession(SessionContext context) throws AuthorizationException {
+        // 这就是上面分析过的方法，判断是否需要校验和启动调度作业
         enableSessionValidationIfNecessary();
+        // 继续提供抽象方法由子类实现怎么创建Session
         return doCreateSession(context);
     }
 
+    /**
+     * 实现doGetSession方法
+     */
     protected abstract Session doCreateSession(SessionContext initData) throws AuthorizationException;
 
     protected void validate(Session session, SessionKey key) throws InvalidSessionException {
@@ -206,12 +223,16 @@ public abstract class AbstractValidatingSessionManager extends AbstractNativeSes
         return session.getTimeout();
     }
 
+    /**
+     * 创建scheduler
+     **/
     protected SessionValidationScheduler createSessionValidationScheduler() {
         ExecutorServiceSessionValidationScheduler scheduler;
 
         if (log.isDebugEnabled()) {
             log.debug("No sessionValidationScheduler set.  Attempting to create default instance.");
         }
+        // 注意：这个的this指的就是ValidatingSessionManager接口啦，前面分析过，调度作业的具体内容时由这个接口来提供的。
         scheduler = new ExecutorServiceSessionValidationScheduler(this);
         scheduler.setInterval(getSessionValidationInterval());
         if (log.isTraceEnabled()) {
@@ -220,9 +241,14 @@ public abstract class AbstractValidatingSessionManager extends AbstractNativeSes
         return scheduler;
     }
 
+    /**
+     * 具体的开启实现在这里
+     **/
     protected synchronized void enableSessionValidation() {
+        // 是否设置了scheduler，如果没有就创建一个
         SessionValidationScheduler scheduler = getSessionValidationScheduler();
         if (scheduler == null) {
+            // 创建scheduler
             scheduler = createSessionValidationScheduler();
             setSessionValidationScheduler(scheduler);
         }
@@ -232,7 +258,9 @@ public abstract class AbstractValidatingSessionManager extends AbstractNativeSes
             if (log.isInfoEnabled()) {
                 log.info("Enabling session validation scheduler...");
             }
+            // 开启调度作业
             scheduler.enableSessionValidation();
+            // 开启作业后的后置处理方法(钩子方法)
             afterSessionValidationEnabled();
         }
     }
@@ -274,11 +302,14 @@ public abstract class AbstractValidatingSessionManager extends AbstractNativeSes
         if (log.isInfoEnabled()) {
             log.info("Validating all active sessions...");
         }
-
+        // 标志无效的Session个数
         int invalidCount = 0;
 
+        // 获取所有有效的Session
+        // 这是一个抽象方法。因为目前来说，也不知道Session存放在哪里，要从哪里获取呢？
         Collection<Session> activeSessions = getActiveSessions();
 
+        // 遍历判断Session是否有效
         if (activeSessions != null && !activeSessions.isEmpty()) {
             for (Session s : activeSessions) {
                 try {
